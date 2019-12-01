@@ -1,23 +1,12 @@
+.globl pinte_cinza
+.globl pinte_branco
+
 .eqv CINZA         0x696969
 .eqv BRANCO        0xFFFFFF
-.eqv VERDE_LIG     0x00FF00
-.eqv VERDE_DESL    0x90EE90
-.eqv AMARELO_LIG   0xFFFF00
-.eqv AMARELO_DESL  0xF0E68C
-.eqv VERMELHO_LIG  0xFF0000
-.eqv VERMELHO_DESL 0xFF6347
-.eqv AZUL_LIG      0x0000FF
-.eqv AZUL_DESL     0x00BFFF
 
-.text
-	
-def_fundo:
-	addi, $t0, $zero, 4096 # quantidade de pontos na tela (256*256/4*4)
-	add, $t1, $zero, $t0 # mapeamento
-	lui, $t1, 0x1001 # inicio
+# $s0 = pincel
 
-pinte_genius:
-	# $s0 = pincel 
+pinte_cinza:
 	addi, $s0, $zero, CINZA # molha o pincel de cinza
 	
 	sw $s0, 1640($t1) # pinta os pixels com a cor no pincel (cinza)
@@ -161,6 +150,9 @@ pinte_genius:
 	sw $s0, 14476($t1)
 	sw $s0, 14480($t1)
 	
+	jr $ra
+	
+pinte_branco:
 	addi, $s0, $zero, BRANCO  # molha o pincel de branco
 		
 	sw $s0, 6260($t1) # pinta os pixels com a cor no pincel (branco)
@@ -224,15 +216,4 @@ pinte_genius:
 	sw $s0, 9856($t1)
 	sw $s0, 9860($t1)
 	
-	addi, $s0, $zero, VERDE_DESL # molha o pincel de verde claro
-	jal pinte_verde # pinta os pixels
-
-	addi, $s0, $zero, VERMELHO_DESL # molha o pincel de vermelho claro
-	jal pinte_vermelho # pinta os pixels
-	
-	addi, $s0, $zero, AZUL_DESL # molha o pincel de azul claro
-	jal pinte_azul # pinta os pixels
-	
-	addi, $s0, $zero, AMARELO_DESL # molha o pincel de amarelo claro
-	jal pinte_amarelo # pinta os pixels
-	
+	jr $ra
