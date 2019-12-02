@@ -16,7 +16,7 @@
 	strPerdeu: .asciiz "\nVOCÊ PERFDEU! :C"
 	strGanhou: .asciiz "\n>>> VOCÊ GANHOU! <<<"
 	strVezPC: .asciiz "\n -> Vez do Genius!"
-	strVezUser: .asciiz "\n -> Sua vez! \n Você jogou: "
+	strVezUser: .asciiz "\n -> Sua vez! \n Você jogou:\n"
 	strNivel: "\n NIVEL: "
 	msg1: .asciiz  "n lembro"
 	msg2: .asciiz "\n*** array preenchido ***"
@@ -96,16 +96,6 @@ main:
 		loop_jogadas_pc:
 			lw $s7, arrayGenius($t2) # carrega o dado[i] no registrador auxiliar
 		
-			# exibe o dado
-			li $v0, 1
-			move $a0, $s7
-			syscall
-		
-			# exibe a virgula - mensagem 4
-			li $v0, 4
-			la $a0, msg4
-			syscall
-			
 			la $s2, ($s7) # seta o auxiliar $s2 com a jogada para o label processa_jogada
 			la $t6, processa_jogada # set t6 to label's address
 			jalr $t7, $t6 # set t0 to Program Counter (return address
@@ -123,12 +113,7 @@ main:
 		
 			# condicao do laco
 			bne $t3, $t4, loop_jogadas_pc
-		
-		# exibe a chave - mensagem 4
-		li $v0, 4
-		la $a0, msg5
-		syscall
-		
+				
 		# reinicia o indices
 		addi, $t2, $zero, 0
 		addi, $t3, $zero, 0
@@ -137,6 +122,7 @@ main:
 		li $v0, 4
 		la $a0, strVezUser
 		syscall
+		
 		#### Jogadas do usuario ####
 		loop_jogadas_user:
 			# recebe o numero
@@ -153,10 +139,10 @@ main:
 		    		      # then jump to statement whose adress is in t6
 									
 			# DELAY DE 1/2s
-			addi $t8, $zero, 500
-			move $a0, $t8
-			li $v0, 32	# syscall 32: funcao de sleep
-			syscall
+			#addi $t8, $zero, 500
+			#move $a0, $t8
+			#li $v0, 32	# syscall 32: funcao de sleep
+			#syscall
 			
 			bne $s1, $s7, perdeu
 			
