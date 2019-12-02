@@ -1,16 +1,24 @@
  # SIGNIFICADO DOS DADOS NO ARRAY (PARA COR E TECLADO)
  # 0 = VERDE (CIMA), 1 = AZUL (DIREITA), 2 = VERMELHO (BAIXO), 3 = AMARELO (ESQUERDA)
 
-.eqv CAPACIDADE 5
+.eqv CAPACIDADE 10
 .eqv VERDE 0
 .eqv AZUL 1
 .eqv VERMELHO 2
 .eqv AMARELO 3
 
 .data
-	arrayGenius: .space 20 # aloca espaço no random access memory
+	arrayGenius: .space 40 # aloca espaço no random access memory
 	
-	msg1: .asciiz "*** SIMULACAO DAS RODADAS ***"
+	strGenius: .asciiz "genius"
+	strNome: .asciiz "********** GENIUS **********"
+	strIniciar: .asciiz "\nDigite 1 para iniciar o jogo\nDigite 0 para sair"
+	strPerdeu: .asciiz "\nVOCÊ PERFDEU! :C"
+	strGanhou: .asciiz "\n>>> VOCÊ GANHOU! <<<"
+	strVezPC: .asciiz "\n -> Vez do Genius!"
+	strVezUser: .asciiz "\n -> Sua vez! \n Você jogou: "
+	strNivel: "\n NIVEL: "
+	msg1: .asciiz  "n lembro"
 	msg2: .asciiz "\n*** array preenchido ***"
 	msg3: .asciiz "\n >>> RESULTADO: Array A[] = {"
 	msg4: .asciiz ", "
@@ -18,29 +26,36 @@
 	msg6: .asciiz " :  novo aleatorio gerado: "
 	
 .text
-	#jal inicializar_bitmap
+
+main:
+	# s1 guarda o valor da pergunta inicial
+	# s2 guarda do nivel que o jogador esta
+	
 	jal def_fundo_bitmap
 	
 	la $t6, inicializar_bitmap # set t6 to label's address
 	jalr $t7, $t6 # set t0 to Program Counter (return address
-			# then jump to statement whose adress is in t6
-			
-			
-			
+		      # then jump to statement whose adress is in t6
+	
+	# exibir nome do jogo
+	li $v0, 4
+	la $a0, strNome
+	syscall
+	
+	jal pergunta_inicial
+		
 	# s7 SERA USADO PARA AUXILIAR ONDE .DATA NAO EH DADO COMO INCORRECT TYPE
 	
 	#INICIALIZA OS INDEX
-	# index i real = $t2 (para acesso aos dados)
-	addi, $t2, $zero, 0
+	addi, $t2, $zero, 0 # index i real = $t2 (para acesso aos dados)
+	addi, $t3, $zero, 0 # index i auxiliar = $t3 (para impressao e condicao do loop)
+	addi, $t4, $zero, 0 # tamanho atual do array = $t4
+	addi, $t5, $zero, 0 # indice atual do array = $t5 para preencher
 	
-	# index i auxiliar = $t3 (para impressao e condicao do loop)
-	addi, $t3, $zero, 0
-	
-	# tamanho atual do array = $t4
-	addi, $t4, $zero, 0
-	
-	# indice atual do array = $t5 para preencher
-	addi, $t5, $zero, 0
+	# exibir nome do jogo
+	li $v0, 4
+	la $a0, strNome
+	syscall
 	
 	game_loop:
 		addi, $t4, $t4, 1 # tam_atual++
@@ -55,12 +70,30 @@
 		# incrementa i para obter proximo indice
 		addi, $t5, $t5, 4
 	
-		# exibe mensagem 3
+		# exibe descricao rodada
 		li $v0, 4
-		la $a0, msg3
+		la $a0, strNivel
 		syscall
-	
-		loop_exibir:
+		
+		# exibe valor do nivel
+		li $v0, 1
+		move $a0, $t4
+		syscall
+		
+		# exibe vez do genius
+		li $v0, 4
+		la $a0, strVezPC
+		syscall
+		
+		
+		# DELAY DE 1s ANTES DA JOGADA DO GENIUS
+		addi $t8, $zero, 1000
+		move $a0, $t8
+		li $v0, 32	# syscall 32: funcao de sleep
+		syscall
+		
+		#### Jogadas do PC ####
+		loop_jogadas_pc:
 			lw $s7, arrayGenius($t2) # carrega o dado[i] no registrador auxiliar
 		
 			# exibe o dado
@@ -73,15 +106,13 @@
 			la $a0, msg4
 			syscall
 			
-			beq $s7, VERDE, piscar_verde
-			beq $s7, AZUL, piscar_azul
-			beq $s7, VERMELHO, piscar_vermelho
-			beq $s7, AMARELO, piscar_amarelo
+			la $s2, ($s7) # seta o auxiliar $s2 com a jogada para o label processa_jogada
+			la $t6, processa_jogada # set t6 to label's address
+			jalr $t7, $t6 # set t0 to Program Counter (return address
+		    		      # then jump to statement whose adress is in t6
 			
-			continuar:
-			
-			# DELAY DE 1s
-			addi $t8, $0, 500
+			# DELAY DE 1/2s
+			addi $t8, $zero, 500
 			move $a0, $t8
 			li $v0, 32	# syscall 32: funcao de sleep
 			syscall
@@ -91,7 +122,7 @@
 			addi, $t3, $t3, 1
 		
 			# condicao do laco
-			bne $t3, $t4, loop_exibir
+			bne $t3, $t4, loop_jogadas_pc
 		
 		# exibe a chave - mensagem 4
 		li $v0, 4
@@ -102,17 +133,96 @@
 		addi, $t2, $zero, 0
 		addi, $t3, $zero, 0
 		
+		# exibe descricao rodada
+		li $v0, 4
+		la $a0, strVezUser
+		syscall
+		#### Jogadas do usuario ####
+		loop_jogadas_user:
+			# recebe o numero
+			li $v0, 5
+			syscall
+			move $s1, $v0 # guarda o int em s1
+					
+			lw $s7, arrayGenius($t2) # carrega o dado[i] no registrador auxiliar
+			
+			
+			la $s2, ($s1) # seta o auxiliar $s2 com a jogada para o label processa_jogada
+			la $t6, processa_jogada # set t6 to label's address
+			jalr $t7, $t6 # set t0 to Program Counter (return address
+		    		      # then jump to statement whose adress is in t6
+									
+			# DELAY DE 1/2s
+			addi $t8, $zero, 500
+			move $a0, $t8
+			li $v0, 32	# syscall 32: funcao de sleep
+			syscall
+			
+			bne $s1, $s7, perdeu
+			
+			# incrementa i para obter proximo indice
+			addi, $t2, $t2, 4
+			addi, $t3, $t3, 1
+		
+			# condicao do laco
+			bne $t3, $t4, loop_jogadas_user
+			
+		# reinicia o indices
+		addi, $t2, $zero, 0
+		addi, $t3, $zero, 0
+		
 		# condicao do laco / quando atingir a capacidae max do array para
 		addi, $s7, $zero, CAPACIDADE
 		bne $t4, $s7, game_loop
 
+	j ganhou
+
+pergunta_inicial:
+	# exibe strIniciar
+	li $v0, 4
+	la $a0, strIniciar
+	syscall
+	
+	# recebe o numero
+	li $v0, 5
+	syscall
+	move $s1, $v0 # guarda o int em s1
+	
+	beq $s1, $zero, encerrar
+	bne $s1, 1, pergunta_inicial
+	jr $ra
+
+perdeu:
+	# exibe mensagem de insucesso 
+	li $v0, 4
+	la $a0, strPerdeu
+	syscall
+	
 	j encerrar
+	
+
+ganhou:
+	# exibe mensagem de insucesso 
+	li $v0, 4
+	la $a0, strGanhou
+	syscall
+	
+	j encerrar
+	
+processa_jogada:
+	beq $s2, VERDE, piscar_verde
+	beq $s2, AZUL, piscar_azul
+	beq $s2, VERMELHO, piscar_vermelho
+	beq $s2, AMARELO, piscar_amarelo
+	
+	continuar:
+	jr $t7
 
 piscar_verde:
 	jal pinte_verde_lig
 	
 	# DELAY DE 1s
-	addi $t8, $0, 1000
+	addi $t8, $zero, 1000
 	move $a0, $t8
 	li $v0, 32	# syscall 32: funcao de sleep
 	syscall	
@@ -124,7 +234,7 @@ piscar_azul:
 	jal pinte_azul_lig
 	
 	# DELAY DE 1s
-	addi $t8, $0, 1000
+	addi $t8, $zero, 1000
 	move $a0, $t8
 	li $v0, 32	# syscall 32: funcao de sleep
 	syscall	
@@ -136,7 +246,7 @@ piscar_azul:
 piscar_vermelho:
 	jal pinte_vermelho_lig
 	# DELAY DE 1s
-	addi $t8, $0, 1000
+	addi $t8, $zero, 1000
 	move $a0, $t8
 	li $v0, 32	# syscall 32: funcao de sleep
 	syscall
@@ -147,7 +257,7 @@ piscar_amarelo:
 	jal pinte_amarelo_lig
 	
 	# DELAY DE 1s
-	addi $t8, $0, 1000
+	addi $t8, $zero, 1000
 	move $a0, $t8
 	li $v0, 32	# syscall 32: funcao de sleep
 	syscall	
