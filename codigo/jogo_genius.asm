@@ -1,6 +1,3 @@
- # SIGNIFICADO DOS DADOS NO ARRAY (PARA COR E TECLADO)
- # 0 = VERDE (CIMA), 1 = AZUL (DIREITA), 2 = VERMELHO (BAIXO), 3 = AMARELO (ESQUERDA)
-
 .eqv CAPACIDADE 10
 .eqv VERDE 0
 .eqv AZUL 1
@@ -12,18 +9,12 @@
 	
 	strGenius: .asciiz "genius"
 	strNome: .asciiz "********** GENIUS **********"
-	strIniciar: .asciiz "\nDigite 1 para iniciar o jogo\nDigite 0 para sair"
-	strPerdeu: .asciiz "\nVOCÊ PERFDEU! :C"
+	strIniciar: .asciiz "\nDigite 1 para iniciar o jogo\nDigite 0 para sair\n"
+	strPerdeu: .asciiz "\nVOCÊ PERDEU! :C"
 	strGanhou: .asciiz "\n>>> VOCÊ GANHOU! <<<"
 	strVezPC: .asciiz "\n -> Vez do Genius!"
 	strVezUser: .asciiz "\n -> Sua vez! \n Você jogou:\n"
 	strNivel: "\n NIVEL: "
-	msg1: .asciiz  "n lembro"
-	msg2: .asciiz "\n*** array preenchido ***"
-	msg3: .asciiz "\n >>> RESULTADO: Array A[] = {"
-	msg4: .asciiz ", "
-	msg5: .asciiz "}"
-	msg6: .asciiz " :  novo aleatorio gerado: "
 	
 .text
 
@@ -138,12 +129,6 @@ main:
 			jalr $t7, $t6 # set t0 to Program Counter (return address
 		    		      # then jump to statement whose adress is in t6
 									
-			# DELAY DE 1/2s
-			#addi $t8, $zero, 500
-			#move $a0, $t8
-			#li $v0, 32	# syscall 32: funcao de sleep
-			#syscall
-			
 			bne $s1, $s7, perdeu
 			
 			# incrementa i para obter proximo indice
@@ -188,7 +173,7 @@ perdeu:
 	
 
 ganhou:
-	# exibe mensagem de insucesso 
+	# exibe mensagem de sucesso 
 	li $v0, 4
 	la $a0, strGanhou
 	syscall
